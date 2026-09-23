@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaamgar — Daily Wage Hiring</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  :root {
+    --paper: #EEEBE0; --ink: #20241E; --ink-soft: #565A4E;
+    --steel: #33565F; --steel-dark: #21393F; --steel-tint: #E1EAEA;
+    --safety: #D9962E; --safety-tint: #F6E7CB;
+    --rust: #A24B2C; --rust-tint: #F1DED2;
+    --line: #C8C3AF; --card: #FAF8F1; --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  h1, h2, h3, .num { font-weight: 600; margin: 0; }
+  input, select, button {
+    font-family: inherit; font-size: 14px; color: var(--ink);
+  }
+  input, select {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 8px 10px; width: 100%;
+  }
+  button { cursor: pointer; border: none; }
+
+  header.topbar {
+    background: var(--steel-dark); color: #F3F1E7; padding: 12px 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand .mark { font-size: 20px; }
+  .brand h1 { font-size: 18px; }
+  .who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .who button { background: rgba(255,255,255,0.14); color: #fff; padding: 6px 12px; border-radius: 4px; }
+  nav.tabs { display: flex; gap: 4px; }
+  nav.tabs button { padding: 7px 12px; border-radius: var(--radius); font-size: 13.5px; color: #DCD9C9; background: none; }
+  nav.tabs button.active { background: rgba(255,255,255,0.14); color: #fff; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+  section.panel { display: none; }
+  section.panel.active { display: block; }
+
+  /* ---- auth ---- */
+  .auth-wrap { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; }
+  .auth-wrap h2 { margin-bottom: 4px; }
+  .auth-wrap p { color: var(--ink-soft); font-size: 13.5px; margin-top: 0; }
+  .auth-wrap .row { margin: 12px 0; }
+  .auth-wrap label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 4px; }
+  .auth-switch { text-align: center; margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
+  .auth-switch a { color: var(--steel); cursor: pointer; text-decoration: underline; }
+  .error-box { background: var(--rust-tint); color: var(--rust); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; margin-top: 10px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 14px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; }
+  .btn-primary { background: var(--steel); color: #fff; }
+  .btn-primary:hover { background: var(--steel-dark); }
+  .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn-safety { background: var(--safety); color: #241900; }
+  .btn-block { width: 100%; }
+  .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 26px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+  .stat .num { font-size: 22px; } .stat .label { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  .section-head { display: flex; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .section-head p { margin: 2px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+
+  .filters { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .wcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .wcard-top { display: flex; gap: 10px; align-items: center; }
+  .avatar { width: 42px; height: 42px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .wcard-name { font-size: 15px; font-weight: 600; }
+  .wcard-skill { font-size: 12.5px; color: var(--ink-soft); }
+  .badge-verified { font-size: 10.5px; color: var(--steel); border: 1px solid var(--steel); border-radius: 3px; padding: 1px 5px; display: inline-block; margin-top: 2px; }
+  .rating { font-size: 13px; color: var(--safety); }
+  .rating span.count { color: var(--ink-soft); margin-left: 3px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag { font-size: 11.5px; padding: 2px 7px; border-radius: 3px; background: var(--steel-tint); color: var(--steel-dark); border: 1px solid var(--line); }
+  .wcard-meta { font-size: 12.5px; color: var(--ink-soft); display: flex; justify-content: space-between; }
+  .wcard-price { font-size: 16px; font-weight: 600; }
+  .wcard-price small { font-size: 11.5px; font-weight: 400; color: var(--ink-soft); }
+  .empty { text-align: center; padding: 40px 20px; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  .bcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .bcard-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .bcard-who { display: flex; gap: 10px; align-items: center; }
+  .bcard-price { text-align: right; }
+  .bcard-price .num { font-size: 17px; }
+  .status-pill { font-size: 11.5px; padding: 3px 9px; border-radius: 3px; display: inline-block; font-weight: 500; }
+  .stepper { display: flex; gap: 4px; margin: 12px 0; flex-wrap: wrap; }
+  .step { flex: 1; min-width: 70px; text-align: center; font-size: 10.5px; color: var(--ink-soft); padding-top: 8px; border-top: 3px solid var(--line); }
+  .step.done { border-top-color: var(--steel); color: var(--steel-dark); font-weight: 500; }
+  .step.now { border-top-color: var(--safety); color: var(--ink); font-weight: 600; }
+  .log { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .log div { padding: 2px 0; } .log strong { color: var(--ink); font-weight: 500; }
+  .bcard-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .pay-note { font-size: 12px; color: var(--rust); margin-top: 8px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(15,17,12,0.55); display: none; align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; z-index: 50; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: 10px; max-width: 480px; width: 100%; padding: 22px; border: 1px solid var(--line); }
+  .modal-close { float: right; font-size: 20px; line-height: 1; color: var(--ink-soft); background: none; }
+  .modal .row { margin: 14px 0; }
+  .modal label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 5px; }
+  .modal .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 14px; }
+  .modal .total .num { font-size: 22px; }
+  .field-2 { display: flex; gap: 10px; } .field-2 > div { flex: 1; }
+  .paying { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--steel); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer.note { margin-top: 30px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 12.5px; color: var(--ink-soft); }
+
+  .chat-toggle { font-size: 12.5px; color: var(--steel); text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; }
+  .chat-box { display: none; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .chat-box.open { display: block; }
+  .chat-log { max-height: 160px; overflow-y: auto; font-size: 13px; margin-bottom: 8px; }
+  .chat-msg { padding: 5px 0; }
+  .chat-msg .who { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .chat-send { display: flex; gap: 6px; }
+  .chat-send input { flex: 1; }
+
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .filters { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="authScreen" class="auth-wrap" style="display:none;">
+  <h2 id="authTitle">Login karein</h2>
+  <p id="authSub">Apna account se hire karna shuru karein</p>
+
+  <div id="loginForm">
+    <div class="row"><label>Phone number</label><input type="tel" id="loginPhone" placeholder="9876543210"></div>
+    <div class="row"><label>Password</label><input type="password" id="loginPassword"></div>
+    <button class="btn btn-primary btn-block" id="loginBtn">Login</button>
+    <div class="auth-switch">Naya account? <a id="showRegister">Register karein</a></div>
+  </div>
+
+  <div id="registerForm" style="display:none;">
+    <div class="row"><label>Naam</label><input type="text" id="regName"></div>
+    <div class="row"><label>Phone number</label><input type="tel" id="regPhone" placeholder="9876543210"></div>
+    <div class="row"><label>Password</label><input type="password" id="regPassword"></div>
+    <button class="btn btn-primary btn-block" id="registerBtn">Account banayein</button>
+    <div class="auth-switch">Pehle se account hai? <a id="showLogin">Login karein</a></div>
+  </div>
+
+  <div id="authError" class="error-box" style="display:none;"></div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="appScreen" style="display:none;">
+  <header class="topbar">
+    <div class="brand"><span class="mark">👷</span><h1>Kaamgar</h1></div>
+    <nav class="tabs">
+      <button class="active" data-tab="hire">Workers hire karein</button>
+      <button data-tab="bookings">Meri bookings</button>
+    </nav>
+    <div class="who">
+      <span id="whoName"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats" id="statsRow"></div>
+
+    <section class="panel active" id="panel-hire">
+      <div class="section-head">
+        <div><h2>Kaamgar dhundein aur hire karein</h2><p>Skill aur jagah ke hisaab se filter karein</p></div>
+      </div>
+      <div class="filters">
+        <input type="text" id="fSearch" placeholder="Naam ya skill search karein">
+        <select id="fSkill"><option value="">Sabhi skills</option></select>
+        <select id="fCity"><option value="">Sabhi jagah</option></select>
+      </div>
+      <div class="grid" id="workerGrid"><div class="empty">Loading...</div></div>
+    </section>
+
+    <section class="panel" id="panel-bookings">
+      <div class="section-head">
+        <div><h2>Meri bookings aur kaam ka status</h2><p>Payment aur kaam ki progress yahan dikhegi</p></div>
+      </div>
+      <div id="bookingsList"></div>
+    </section>
+
+    <footer class="note">
+      Payment Razorpay se real integrate hai — agar server pe test keys set nahi hain to "Pay" karne pe
+      config error dikhega, ye normal hai jab tak aap <code>.env</code> mein apni Razorpay test keys nahi daalte
+      (README dekhein). Location abhi manually update hoti hai — asli GPS ke liye worker-side app agla step hai.
+    </footer>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var state = { hirer: null, workers: [], bookings: [] };
+
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    return fetch(path, opts).then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, status: r.status, data: data }; });
+    });
+  }
+
+  function fmtMoney(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
+  function fmtDate(d) {
+    var dt = new Date(d + "T00:00:00");
+    return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  }
+  function initials(name) { return name.split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase(); }
+  var COLORS = ["#33565F", "#A24B2C", "#6B6350", "#3E6B4A", "#7A4E9B", "#B0872F"];
+  function colorFor(id) { return COLORS[id % COLORS.length]; }
+
+  // ---------------- auth screen wiring ----------------
+  var authScreen = document.getElementById("authScreen");
+  var appScreen = document.getElementById("appScreen");
+  var authError = document.getElementById("authError");
+
+  function showAuthError(msg) { authError.textContent = msg; authError.style.display = "block"; }
+  function clearAuthError() { authError.style.display = "none"; }
+
+  document.getElementById("showRegister").addEventListener("click", function () {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("registerForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Account banayein";
+    clearAuthError();
+  });
+  document.getElementById("showLogin").addEventListener("click", function () {
+    document.getElementById("registerForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Login karein";
+    clearAuthError();
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", function () {
+    clearAuthError();
+    api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        phone: document.getElementById("loginPhone").value,
+        password: document.getElementById("loginPassword").value
+      })
+    }).then(function (res) {
+      if (!res.ok) return showAuthError(res.data.error || "Login fail hua");
+      startApp(res.data);
+    });
+  });
+
+  document.getElementById("registerBtn").addEventListener("click", function () {
+    clearAuthError();
+    api("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: document.getElementById("regName").value,
+        phone: document.getElementById("regPhone").value,
+        password: document.getElementById("regPassword").value
+      })
+    }).then(function (res) {
+      if (!res.ok) return showAuthError(res.data.error || "Registration fail hua");
+      startApp(res.data);
+    });
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function () {
+    api("/api/auth/logout", { method: "POST" }).then(function () {
+      state.hirer = null;
+      appScreen.style.display = "none";
+      authScreen.style.display = "block";
+    });
+  });
+
+  function startApp(hirer) {
+    state.hirer = hirer;
+    authScreen.style.display = "none";
+    appScreen.style.display = "block";
+    document.getElementById("whoName").textContent = hirer.name;
+    loadWorkers();
+    loadBookings();
+  }
+
+  // ---------------- tabs ----------------
+  document.querySelectorAll("nav.tabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("nav.tabs button").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll("section.panel").forEach(function (p) { p.classList.remove("active"); });
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      if (btn.dataset.tab === "bookings") loadBookings();
+    });
+  });
+
+  // ---------------- workers ----------------
+  function loadWorkers() {
+    api("/api/workers").then(function (res) {
+      state.workers = res.data || [];
+      var skills = Array.from(new Set(state.workers.map(function (w) { return w.skill; })));
+      var cities = Array.from(new Set(state.workers.map(function (w) { return w.city; })));
+      var fSkill = document.getElementById("fSkill");
+      var fCity = document.getElementById("fCity");
+      fSkill.innerHTML = '<option value="">Sabhi skills</option>' + skills.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join("");
+      fCity.innerHTML = '<option value="">Sabhi jagah</option>' + cities.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join("");
+      renderWorkers();
+      renderStats();
+    });
+  }
+
+  function matchesFilters(w) {
+    var q = document.getElementById("fSearch").value.trim().toLowerCase();
+    var sk = document.getElementById("fSkill").value;
+    var ct = document.getElementById("fCity").value;
+    if (sk && w.skill !== sk) return false;
+    if (ct && w.city !== ct) return false;
+    if (q && w.name.toLowerCase().indexOf(q) === -1 && w.skill.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  }
+
+  function renderWorkers() {
+    var grid = document.getElementById("workerGrid");
+    var list = state.workers.filter(matchesFilters);
+    if (!list.length) { grid.innerHTML = '<div class="empty">Koi kaamgar nahi mila.</div>'; return; }
+    grid.innerHTML = list.map(function (w) {
+      var stars = "★".repeat(Math.round(w.rating)) + "☆".repeat(5 - Math.round(w.rating));
+      var skillsDetail = (w.skills_detail || "").split(",").slice(0, 3);
+      var tags = skillsDetail.map(function (t) { return '<span class="tag">' + t.trim() + '</span>'; }).join("");
+      return (
+        '<div class="wcard">' +
+          '<div class="wcard-top"><div class="avatar" style="background:' + colorFor(w.id) + '">' + initials(w.name) + '</div>' +
+          '<div><div class="wcard-name">' + w.name + '</div><div class="wcard-skill">' + w.skill +
+          (w.verification_status === "verified" ? '<span class="badge-verified">ID verified</span>' : '') + '</div></div></div>' +
+          '<div class="rating">' + stars + ' <span class="count">' + w.rating + ' · ' + w.jobs_completed + ' kaam</span></div>' +
+          '<div class="tags">' + tags + '</div>' +
+          '<div class="wcard-meta"><span>' + w.city + '</span><span>' + w.experience_years + ' saal anubhav</span></div>' +
+          '<div class="wcard-meta"><span class="wcard-price">' + fmtMoney(w.daily_wage) + '<small> /din</small></span>' +
+          '<button class="btn btn-primary" data-hire="' + w.id + '">Hire karein</button></div>' +
+        '</div>'
+      );
+    }).join("");
+    grid.querySelectorAll("[data-hire]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openHireModal(Number(btn.dataset.hire)); });
+    });
+  }
+  ["fSearch", "fSkill", "fCity"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", renderWorkers);
+  });
+
+  // ---------------- stats ----------------
+  function renderStats() {
+    var active = state.bookings.filter(function (b) { return b.status !== "completed"; }).length;
+    var spent = state.bookings.reduce(function (s, b) { return s + (b.payment_status === "paid" ? b.total_amount : 0); }, 0);
+    var completed = state.bookings.filter(function (b) { return b.status === "completed"; }).length;
+    document.getElementById("statsRow").innerHTML = [
+      ["Available kaamgar", state.workers.length],
+      ["Active bookings", active],
+      ["Kaam poore hue", completed],
+      ["Total paid", fmtMoney(spent)]
+    ].map(function (s) { return '<div class="stat"><div class="num">' + s[1] + '</div><div class="label">' + s[0] + '</div></div>'; }).join("");
+  }
+
+  // ---------------- hire + pay modal ----------------
+  var overlay = document.getElementById("overlay");
+  var modalBody = document.getElementById("modalBody");
+  function closeModal() { overlay.classList.remove("open"); }
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) closeModal(); });
+
+  function openHireModal(workerId) {
+    var w = state.workers.filter(function (x) { return x.id === workerId; })[0];
+    var today = new Date().toISOString().slice(0, 10);
+    modalBody.innerHTML =
+      '<button class="modal-close" data-close>&times;</button>' +
+      '<h3>' + w.name + ' ko hire karein</h3>' +
+      '<div class="wcard-skill">' + w.skill + ' · ' + w.city + '</div>' +
+      '<div class="row field-2">' +
+        '<div><label>Kab se chahiye</label><input type="date" id="mDate" min="' + today + '" value="' + today + '"></div>' +
+        '<div><label>Kitne din</label><input type="number" id="mDays" min="1" max="30" value="1"></div>' +
+      '</div>' +
+      '<div class="total"><span>Total</span><span class="num" id="mTotal">' + fmtMoney(w.daily_wage) + '</span></div>' +
+      '<div class="row" id="hireArea"><button class="btn btn-primary btn-block" id="hireBtn">Booking banayein</button></div>';
+
+    var daysInput = modalBody.querySelector("#mDays");
+    var totalEl = modalBody.querySelector("#mTotal");
+    daysInput.addEventListener("input", function () {
+      var days = Math.max(1, Number(daysInput.value) || 1);
+      totalEl.textContent = fmtMoney(w.daily_wage * days);
+    });
+    modalBody.querySelector("[data-close]").addEventListener("click", closeModal);
+    modalBody.querySelector("#hireBtn").addEventListener("click", function () {
+      var days = Math.max(1, Number(daysInput.value) || 1);
+      var date = modalBody.querySelector("#mDate").value || today;
+      createBooking(w, date, days);
+    });
+    overlay.classList.add("open");
+  }
+
+  function createBooking(worker, date, days) {
+    var hireArea = document.getElementById("hireArea");
+    hireArea.innerHTML = '<div class="paying"><span class="spinner"></span> Booking ban rahi hai...</div>';
+    api("/api/bookings", { method: "POST", body: JSON.stringify({ worker_id: worker.id, start_date: date, days: days }) })
+      .then(function (res) {
+        if (!res.ok) { hireArea.innerHTML = '<div class="pay-note">' + (res.data.error || "Kuch galat ho gaya") + '</div>'; return; }
+        showPayStep(res.data.id, res.data.total_amount);
+      });
+  }
+
+  function showPayStep(bookingId, total) {
+    var hireArea = document.getElementById("hireArea");
+    hireArea.innerHTML =
+      '<div class="total" style="border:none;padding:0;margin:0 0 10px;"><span>Booking #' + bookingId + '</span><span class="num">' + fmtMoney(total) + '</span></div>' +
+      '<button class="btn btn-safety btn-block" id="payBtn">Online pay karein</button>' +
+      '<div id="payMsg"></div>';
+    document.getElementById("payBtn").addEventListener("click", function () { payBooking(bookingId); });
+  }
+
+  function payBooking(bookingId) {
+    var payMsg = document.getElementById("payMsg");
+    payMsg.innerHTML = '<div class="paying"><span class="spinner"></span> Order ban raha hai...</div>';
+
+    api("/api/bookings/" + bookingId + "/create-order", { method: "POST" }).then(function (res) {
+      if (!res.ok) {
+        payMsg.innerHTML = '<div class="pay-note">Payment shuru nahi ho paya: ' + (res.data.error || "unknown error") + '</div>';
+        return;
+      }
+      var order = res.data;
+      var options = {
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.order_id,
+        name: "Kaamgar",
+        description: "Booking #" + bookingId,
+        handler: function (response) {
+          payMsg.innerHTML = '<div class="paying"><span class="spinner"></span> Payment verify ho raha hai...</div>';
+          api("/api/payments/verify", {
+            method: "POST",
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          }).then(function (vr) {
+            if (!vr.ok) { payMsg.innerHTML = '<div class="pay-note">Verify fail: ' + vr.data.error + '</div>'; return; }
+            closeModal();
+            loadBookings();
+            document.querySelector('nav.tabs button[data-tab="bookings"]').click();
+          });
+        },
+        modal: { ondismiss: function () { payMsg.innerHTML = '<div class="pay-note">Checkout band kar diya.</div>'; } },
+        theme: { color: "#33565F" }
+      };
+      var rzp = new Razorpay(options);
+      rzp.on("payment.failed", function (resp) { payMsg.innerHTML = '<div class="pay-note">Payment fail: ' + resp.error.description + '</div>'; });
+      payMsg.innerHTML = "";
+      rzp.open();
+    });
+  }
+
+  // ---------------- bookings ----------------
+  var STATUS_LABELS = {
+    requested: "Requested", confirmed: "Confirmed", en_route: "Worker aa raha hai",
+    checked_in: "Site par check-in", in_progress: "Kaam chal raha hai", completed: "Poora hua"
+  };
+  var STATUS_FLOW = ["requested", "confirmed", "en_route", "checked_in", "in_progress", "completed"];
+
+  function loadBookings() {
+    api("/api/bookings").then(function (res) {
+      state.bookings = res.data || [];
+      renderBookings();
+      renderStats();
+    });
+  }
+
+  function renderBookings() {
+    var wrap = document.getElementById("bookingsList");
+    if (!state.bookings.length) { wrap.innerHTML = '<div class="empty">Abhi tak koi booking nahi hai.</div>'; return; }
+    wrap.innerHTML = state.bookings.map(function (b) {
+      var idx = STATUS_FLOW.indexOf(b.status);
+      var steps = STATUS_FLOW.map(function (s, i) {
+        var cls = i < idx ? "done" : (i === idx ? "now" : "");
+        return '<div class="step ' + cls + '">' + STATUS_LABELS[s] + '</div>';
+      }).join("");
+      var needsPay = b.payment_status !== "paid";
+      var nextLabel = idx < STATUS_FLOW.length - 1 ? STATUS_LABELS[STATUS_FLOW[idx + 1]] : null;
+      return (
+        '<div class="bcard">' +
+          '<div class="bcard-head"><div class="bcard-who"><div class="avatar" style="background:' + colorFor(b.worker_id) + '">' + initials(b.worker_name) + '</div>' +
+          '<div><div class="wcard-name">' + b.worker_name + '</div><div class="wcard-skill">' + b.worker_skill + ' · ' + b.worker_city + '</div></div></div>' +
+          '<div class="bcard-price"><div class="num">' + fmtMoney(b.total_amount) + '</div><div class="wcard-skill">' + fmtDate(b.start_date) + ' · ' + b.days + ' din</div></div></div>' +
+          '<span class="status-pill" style="background:var(--steel-tint);color:var(--steel-dark)">' + STATUS_LABELS[b.status] + (needsPay ? " · Payment pending" : " · Paid") + '</span>' +
+          '<div class="stepper">' + steps + '</div>' +
+          '<div class="bcard-actions">' +
+          (needsPay ? '<button class="btn btn-safety" data-pay="' + b.id + '">Ab pay karein</button>' :
+            (nextLabel ? '<button class="btn btn-outline" data-advance="' + b.id + '" title="Worker khud check-in kar sakta hai /worker se — ye sirf manual override hai">Manual update: ' + nextLabel + '</button>' : '')) +
+          '</div>' +
+          '<span class="chat-toggle" data-chat-toggle="' + b.id + '">Worker se message karein</span>' +
+          '<div class="chat-box" id="chat-' + b.id + '">' +
+            '<div class="chat-log" id="chatlog-' + b.id + '"></div>' +
+            '<div class="chat-send"><input type="text" id="chatinput-' + b.id + '" placeholder="Message likhein..."><button class="btn btn-primary" data-send="' + b.id + '">Bhejein</button></div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    wrap.querySelectorAll("[data-pay]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bookingId = Number(btn.dataset.pay);
+        modalBody.innerHTML = '<button class="modal-close" data-close>&times;</button><h3>Payment</h3><div id="hireArea"></div>';
+        modalBody.querySelector("[data-close]").addEventListener("click", closeModal);
+        overlay.classList.add("open");
+        var b = state.bookings.filter(function (x) { return x.id === bookingId; })[0];
+        showPayStep(bookingId, b.total_amount);
+      });
+    });
+    wrap.querySelectorAll("[data-advance]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        api("/api/bookings/" + btn.dataset.advance + "/advance-status", {
+          method: "POST", body: JSON.stringify({ note: "Manual update from dashboard" })
+        }).then(function () { loadBookings(); });
+      });
+    });
+    wrap.querySelectorAll("[data-chat-toggle]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var id = el.dataset.chatToggle;
+        var box = document.getElementById("chat-" + id);
+        box.classList.toggle("open");
+        if (box.classList.contains("open")) loadMessages(id);
+      });
+    });
+    wrap.querySelectorAll("[data-send]").forEach(function (btn) {
+      btn.addEventListener("click", function () { sendMessage(btn.dataset.send); });
+    });
+  }
+
+  function loadMessages(bookingId) {
+    api("/api/bookings/" + bookingId + "/messages").then(function (res) {
+      var log = document.getElementById("chatlog-" + bookingId);
+      if (!res.ok) { log.innerHTML = '<div style="color:var(--rust);">Messages load nahi hue</div>'; return; }
+      if (!res.data.length) { log.innerHTML = '<div style="color:var(--ink-soft);">Koi message nahi hai abhi.</div>'; return; }
+      log.innerHTML = res.data.map(function (m) {
+        return '<div class="chat-msg"><div class="who">' + (m.sender_role === "hirer" ? "Aap" : "Worker") + '</div>' + m.body + '</div>';
+      }).join("");
+      log.scrollTop = log.scrollHeight;
+    });
+  }
+
+  function sendMessage(bookingId) {
+    var input = document.getElementById("chatinput-" + bookingId);
+    var body = input.value.trim();
+    if (!body) return;
+    api("/api/bookings/" + bookingId + "/messages", { method: "POST", body: JSON.stringify({ body: body }) }).then(function (res) {
+      if (res.ok) { input.value = ""; loadMessages(bookingId); }
+    });
+  }
+
+
+  // ---------------- boot ----------------
+  api("/api/auth/me").then(function (res) {
+    if (res.data.logged_in) { startApp(res.data); }
+    else { authScreen.style.display = "block"; }
+  });
+})();
+</script>
+</body>
+</html>

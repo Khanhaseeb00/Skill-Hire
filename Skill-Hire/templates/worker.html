@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaamgar Worker — Mera Kaam</title>
+<style>
+  :root {
+    --paper: #EEEBE0; --ink: #20241E; --ink-soft: #565A4E;
+    --steel: #33565F; --steel-dark: #21393F; --steel-tint: #E1EAEA;
+    --safety: #D9962E; --safety-tint: #F6E7CB;
+    --rust: #A24B2C; --rust-tint: #F1DED2;
+    --line: #C8C3AF; --card: #FAF8F1; --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.5; }
+  h1, h2, h3, .num { font-weight: 600; margin: 0; }
+  input, select, button { font-family: inherit; font-size: 14px; color: var(--ink); }
+  input, select { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; }
+  button { cursor: pointer; border: none; }
+
+  header.topbar { background: var(--steel-dark); color: #F3F1E7; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand h1 { font-size: 18px; }
+  .who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .who button { background: rgba(255,255,255,0.14); color: #fff; padding: 6px 12px; border-radius: 4px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 3px; }
+  .badge.verified { background: var(--steel-tint); color: var(--steel-dark); }
+  .badge.pending { background: var(--safety-tint); color: #5b3d10; }
+  .badge.unverified, .badge.rejected { background: var(--rust-tint); color: var(--rust); }
+
+  main { max-width: 640px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .auth-wrap { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; }
+  .auth-wrap .row { margin: 12px 0; }
+  .auth-wrap label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 4px; }
+  .auth-switch { text-align: center; margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
+  .auth-switch a { color: var(--steel); cursor: pointer; text-decoration: underline; }
+  .error-box { background: var(--rust-tint); color: var(--rust); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; margin-top: 10px; }
+  .field-2 { display: flex; gap: 10px; } .field-2 > div { flex: 1; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 14px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; }
+  .btn-primary { background: var(--steel); color: #fff; }
+  .btn-safety { background: var(--safety); color: #241900; }
+  .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn-block { width: 100%; }
+  .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+  .verify-box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 18px; }
+  .verify-box .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+  .empty { text-align: center; padding: 30px 20px; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  .bcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .bcard-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .status-pill { font-size: 11.5px; padding: 3px 9px; border-radius: 3px; background: var(--steel-tint); color: var(--steel-dark); display: inline-block; margin-bottom: 10px; }
+  .gps-note { font-size: 12px; color: var(--ink-soft); margin-top: 8px; min-height: 16px; }
+
+  .chat-toggle { font-size: 12.5px; color: var(--steel); text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; }
+  .chat-box { display: none; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .chat-box.open { display: block; }
+  .chat-log { max-height: 160px; overflow-y: auto; font-size: 13px; margin-bottom: 8px; }
+  .chat-msg { padding: 5px 0; }
+  .chat-msg .who { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .chat-send { display: flex; gap: 6px; }
+  .chat-send input { flex: 1; }
+</style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-wrap" style="display:none;">
+  <h2 id="authTitle">Worker Login</h2>
+  <p style="color:var(--ink-soft);font-size:13.5px;margin-top:0;">Apne kaam aur bookings dekhne ke liye login karein</p>
+
+  <div id="loginForm">
+    <div class="row"><label>Phone number</label><input type="tel" id="loginPhone" placeholder="9876543210"></div>
+    <div class="row"><label>Password</label><input type="password" id="loginPassword"></div>
+    <button class="btn btn-primary btn-block" id="loginBtn">Login</button>
+    <div class="auth-switch">Naya account? <a id="showRegister">Register karein</a></div>
+  </div>
+
+  <div id="registerForm" style="display:none;">
+    <div class="row"><label>Naam</label><input type="text" id="regName"></div>
+    <div class="row"><label>Phone number</label><input type="tel" id="regPhone"></div>
+    <div class="row"><label>Password</label><input type="password" id="regPassword"></div>
+    <div class="row field-2">
+      <div><label>Skill</label><input type="text" id="regSkill" placeholder="jaise Electrician"></div>
+      <div><label>Daily wage (₹)</label><input type="number" id="regWage" placeholder="700"></div>
+    </div>
+    <div class="row"><label>Shahar</label><input type="text" id="regCity" placeholder="jaise Andheri, Mumbai"></div>
+    <button class="btn btn-primary btn-block" id="registerBtn">Account banayein</button>
+    <div class="auth-switch">Pehle se account hai? <a id="showLogin">Login karein</a></div>
+  </div>
+  <div id="authError" class="error-box" style="display:none;"></div>
+</div>
+
+<div id="appScreen" style="display:none;">
+  <header class="topbar">
+    <div class="brand"><span>👷</span><h1>Mera Kaam</h1></div>
+    <div class="who"><span id="whoName"></span><button id="logoutBtn">Logout</button></div>
+  </header>
+
+  <main>
+    <div class="verify-box">
+      <div class="row">
+        <div>
+          <div style="font-weight:600;">ID Verification</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);">Verified badge se hirers zyada trust karte hain</div>
+        </div>
+        <span class="badge" id="verifyBadge">—</span>
+      </div>
+      <div id="verifyUploadArea" style="margin-top:10px;"></div>
+    </div>
+
+    <h2 style="margin-bottom:10px;">Meri bookings</h2>
+    <div id="bookingsList"><div class="empty">Loading...</div></div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var state = { worker: null, bookings: [] };
+
+  function api(path, opts) {
+    opts = opts || {};
+    if (!(opts.body instanceof FormData)) {
+      opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    }
+    return fetch(path, opts).then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, status: r.status, data: data }; });
+    });
+  }
+  function fmtMoney(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
+  function fmtDate(d) { var dt = new Date(d + "T00:00:00"); return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }); }
+
+  var authScreen = document.getElementById("authScreen");
+  var appScreen = document.getElementById("appScreen");
+  var authError = document.getElementById("authError");
+  function showAuthError(m) { authError.textContent = m; authError.style.display = "block"; }
+  function clearAuthError() { authError.style.display = "none"; }
+
+  document.getElementById("showRegister").addEventListener("click", function () {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("registerForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Worker Registration";
+    clearAuthError();
+  });
+  document.getElementById("showLogin").addEventListener("click", function () {
+    document.getElementById("registerForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Worker Login";
+    clearAuthError();
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", function () {
+    clearAuthError();
+    api("/api/worker-auth/login", {
+      method: "POST",
+      body: JSON.stringify({ phone: document.getElementById("loginPhone").value, password: document.getElementById("loginPassword").value })
+    }).then(function (res) {
+      if (!res.ok) return showAuthError(res.data.error || "Login fail hua");
+      startApp(res.data);
+    });
+  });
+
+  document.getElementById("registerBtn").addEventListener("click", function () {
+    clearAuthError();
+    api("/api/worker-auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: document.getElementById("regName").value,
+        phone: document.getElementById("regPhone").value,
+        password: document.getElementById("regPassword").value,
+        skill: document.getElementById("regSkill").value,
+        city: document.getElementById("regCity").value,
+        daily_wage: document.getElementById("regWage").value
+      })
+    }).then(function (res) {
+      if (!res.ok) return showAuthError(res.data.error || "Registration fail hua");
+      startApp(res.data);
+    });
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function () {
+    api("/api/worker-auth/logout", { method: "POST" }).then(function () {
+      appScreen.style.display = "none";
+      authScreen.style.display = "block";
+    });
+  });
+
+  function startApp(worker) {
+    state.worker = worker;
+    authScreen.style.display = "none";
+    appScreen.style.display = "block";
+    document.getElementById("whoName").textContent = worker.name;
+    renderVerifyBox();
+    loadBookings();
+  }
+
+  // ---------------- verification ----------------
+  function renderVerifyBox() {
+    var badge = document.getElementById("verifyBadge");
+    var status = state.worker.verification_status || "unverified";
+    badge.textContent = status;
+    badge.className = "badge " + status;
+
+    var area = document.getElementById("verifyUploadArea");
+    if (status === "verified") {
+      area.innerHTML = "";
+      return;
+    }
+    area.innerHTML =
+      '<input type="file" id="idFile" accept=".jpg,.jpeg,.png,.pdf" style="margin-bottom:8px;">' +
+      '<button class="btn btn-outline btn-block" id="uploadBtn">ID document upload karein</button>' +
+      '<div id="uploadMsg" style="font-size:12px;margin-top:6px;"></div>';
+    document.getElementById("uploadBtn").addEventListener("click", function () {
+      var fileInput = document.getElementById("idFile");
+      var msg = document.getElementById("uploadMsg");
+      if (!fileInput.files.length) { msg.textContent = "Pehle file chunein."; return; }
+      var fd = new FormData();
+      fd.append("document", fileInput.files[0]);
+      msg.textContent = "Uploading...";
+      api("/api/worker/verification/upload", { method: "POST", body: fd }).then(function (res) {
+        if (!res.ok) { msg.textContent = res.data.error || "Upload fail hua"; return; }
+        state.worker.verification_status = res.data.verification_status;
+        msg.textContent = "Upload ho gaya — admin review karega.";
+        renderVerifyBox();
+      });
+    });
+  }
+
+  // ---------------- bookings + real GPS check-in ----------------
+  var STATUS_LABELS = {
+    requested: "Requested", confirmed: "Confirmed", en_route: "Aap ja rahe hain",
+    checked_in: "Site par check-in", in_progress: "Kaam chal raha hai", completed: "Poora hua"
+  };
+  var NEXT_ACTION_LABEL = {
+    confirmed: "Nikal raha hoon (check-in)", en_route: "Site pahunch gaya", checked_in: "Kaam shuru karta hoon", in_progress: "Kaam poora hua"
+  };
+
+  function loadBookings() {
+    api("/api/worker/bookings").then(function (res) {
+      state.bookings = res.data || [];
+      renderBookings();
+    });
+  }
+
+  function renderBookings() {
+    var wrap = document.getElementById("bookingsList");
+    if (!state.bookings.length) { wrap.innerHTML = '<div class="empty">Abhi tak koi booking assign nahi hui.</div>'; return; }
+    wrap.innerHTML = state.bookings.map(function (b) {
+      var actionLabel = NEXT_ACTION_LABEL[b.status];
+      var canAct = b.payment_status === "paid" && actionLabel;
+      return (
+        '<div class="bcard" data-booking="' + b.id + '">' +
+          '<div class="bcard-head"><div><div style="font-weight:600;">' + b.hirer_name + '</div>' +
+          '<div style="font-size:12.5px;color:var(--ink-soft);">' + fmtDate(b.start_date) + ' · ' + b.days + ' din</div></div>' +
+          '<div class="num">' + fmtMoney(b.total_amount) + '</div></div>' +
+          '<span class="status-pill">' + STATUS_LABELS[b.status] + (b.payment_status === "paid" ? "" : " · Payment pending") + '</span><br>' +
+          (canAct ? '<button class="btn btn-safety" data-checkin="' + b.id + '">' + actionLabel + '</button>' : '') +
+          '<div class="gps-note" id="gps-' + b.id + '"></div>' +
+          '<span class="chat-toggle" data-chat-toggle="' + b.id + '">Message dekhein / bhejein</span>' +
+          '<div class="chat-box" id="chat-' + b.id + '">' +
+            '<div class="chat-log" id="chatlog-' + b.id + '"></div>' +
+            '<div class="chat-send"><input type="text" id="chatinput-' + b.id + '" placeholder="Message likhein..."><button class="btn btn-primary" data-send="' + b.id + '">Bhejein</button></div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    wrap.querySelectorAll("[data-checkin]").forEach(function (btn) {
+      btn.addEventListener("click", function () { doCheckIn(Number(btn.dataset.checkin)); });
+    });
+    wrap.querySelectorAll("[data-chat-toggle]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var id = el.dataset.chatToggle;
+        var box = document.getElementById("chat-" + id);
+        box.classList.toggle("open");
+        if (box.classList.contains("open")) loadMessages(id);
+      });
+    });
+    wrap.querySelectorAll("[data-send]").forEach(function (btn) {
+      btn.addEventListener("click", function () { sendMessage(btn.dataset.send); });
+    });
+  }
+
+  function doCheckIn(bookingId) {
+    var note = document.getElementById("gps-" + bookingId);
+    if (!navigator.geolocation) {
+      note.textContent = "Is browser mein location support nahi hai.";
+      return;
+    }
+    note.textContent = "Location le rahe hain...";
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos.coords.latitude, lng = pos.coords.longitude;
+        note.textContent = "Location mil gayi (" + lat.toFixed(4) + ", " + lng.toFixed(4) + ") — bhej rahe hain...";
+        api("/api/worker/bookings/" + bookingId + "/check-in", {
+          method: "POST",
+          body: JSON.stringify({ latitude: lat, longitude: lng })
+        }).then(function (res) {
+          if (!res.ok) { note.textContent = res.data.error || "Kuch galat ho gaya"; return; }
+          note.textContent = "Status update ho gaya ✓";
+          loadBookings();
+        });
+      },
+      function (err) {
+        note.textContent = "Location permission nahi mili: " + err.message + ". Browser settings mein location allow karein.";
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  // ---------------- messaging ----------------
+  function loadMessages(bookingId) {
+    api("/api/bookings/" + bookingId + "/messages").then(function (res) {
+      var log = document.getElementById("chatlog-" + bookingId);
+      if (!res.ok) { log.innerHTML = '<div style="color:var(--rust);">Messages load nahi hue</div>'; return; }
+      if (!res.data.length) { log.innerHTML = '<div style="color:var(--ink-soft);">Koi message nahi hai abhi.</div>'; return; }
+      log.innerHTML = res.data.map(function (m) {
+        return '<div class="chat-msg"><div class="who">' + (m.sender_role === "worker" ? "Aap" : "Hirer") + '</div>' + m.body + '</div>';
+      }).join("");
+      log.scrollTop = log.scrollHeight;
+    });
+  }
+
+  function sendMessage(bookingId) {
+    var input = document.getElementById("chatinput-" + bookingId);
+    var body = input.value.trim();
+    if (!body) return;
+    api("/api/bookings/" + bookingId + "/messages", { method: "POST", body: JSON.stringify({ body: body }) }).then(function (res) {
+      if (res.ok) { input.value = ""; loadMessages(bookingId); }
+    });
+  }
+
+  // ---------------- boot ----------------
+  api("/api/worker-auth/me").then(function (res) {
+    if (res.data.logged_in) startApp(res.data);
+    else authScreen.style.display = "block";
+  });
+})();
+</script>
+</body>
+</html>
