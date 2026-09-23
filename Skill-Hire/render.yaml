@@ -1,6 +1,3 @@
-# Render blueprint — lets you deploy by connecting your GitHub repo at
-# render.com and choosing "New > Blueprint", instead of clicking through
-# every setting by hand. See README "Deploying" for the full walkthrough.
 services:
   - type: web
     name: kaamgar-backend
@@ -13,10 +10,6 @@ services:
         generateValue: true
       - key: ADMIN_KEY
         sync: false
-      - key: DATABASE_PATH
-        value: /opt/render/project/src/data/kaamgar.db
-      - key: UPLOAD_FOLDER
-        value: /opt/render/project/src/data/uploads
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET
@@ -29,7 +22,3 @@ services:
         sync: false
       - key: TWILIO_FROM_NUMBER
         sync: false
-    disk:
-      name: kaamgar-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
