@@ -45,5 +45,16 @@ def send_sms(to_phone, body):
         auth=(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN),
         timeout=10,
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        # Twilio's error detail (code + human message) is in the JSON body,
+        # not in the plain "400 Client Error" text — surface it so failures
+        # are actually diagnosable from a log line instead of a guess.
+        try:
+            detail = resp.json()
+            raise Exception(
+                f"Twilio {resp.status_code}: {detail.get('message')} "
+                f"(code {detail.get('code')}) — {detail.get('more_info')}"
+            )
+        except ValueError:
+            resp.raise_for_status()
     return resp.json()
