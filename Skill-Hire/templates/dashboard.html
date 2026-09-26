@@ -3,128 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kaamgar — Daily Wage Hiring</title>
+<title>HireNow — Skilled People. Real Work. Faster.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2710%27 fill=%27%23101B33%27/%3E%3Crect x=%279%27 y=%2712%27 width=%277%27 height=%2724%27 rx=%271.5%27 fill=%27%23EAF2F7%27/%3E%3Crect x=%279%27 y=%2721%27 width=%2721%27 height=%277%27 rx=%271.5%27 fill=%27%23EAF2F7%27/%3E%3Cpath d=%27M26 20 L33.5 8 L41 20 L37 20 L37 36 L30 36 L30 20 Z%27 fill=%27%23F5A623%27/%3E%3C/svg%3E">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #EEEBE0; --ink: #20241E; --ink-soft: #565A4E;
-    --steel: #33565F; --steel-dark: #21393F; --steel-tint: #E1EAEA;
-    --safety: #D9962E; --safety-tint: #F6E7CB;
-    --rust: #A24B2C; --rust-tint: #F1DED2;
-    --line: #C8C3AF; --card: #FAF8F1; --radius: 6px;
+    --bp-0: #101B33; --bp-1: #182A4A; --bp-2: #223A63;
+    --line: #3E6E95; --line-soft: rgba(143,190,220,0.16); --line-bright: #8FCBEF;
+    --ink: #EAF2F7; --ink-soft: #93B4CC;
+    --safety: #F5A623; --safety-ink: #241804;
+    --rust: #E2572B; --rust-tint: rgba(226,87,43,0.16);
+    --ok: #58B37C;
+    --radius: 3px;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: var(--paper); color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin: 0; color: var(--ink);
+    background-color: var(--bp-0);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 26px 26px;
+    font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, .num { font-weight: 600; margin: 0; }
-  input, select, button {
-    font-family: inherit; font-size: 14px; color: var(--ink);
-  }
+  h1, h2, h3 { font-family: 'Archivo', sans-serif; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+  .num { font-family: 'Archivo', sans-serif; font-weight: 800; }
+  input, select, button { font-family: inherit; font-size: 14px; color: var(--ink); }
   input, select {
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: var(--radius); padding: 8px 10px; width: 100%;
+    background: var(--bp-0); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 9px 10px; width: 100%;
   }
+  input:focus, select:focus { outline: none; border-color: var(--line-bright); box-shadow: 0 0 0 2px rgba(143,203,239,0.25); }
   button { cursor: pointer; border: none; }
+  code { background: var(--bp-1); padding: 1px 5px; border-radius: 2px; }
+
+  /* corner tick marks — blueprint registration marks, replaces the rounded-card+shadow default */
+  .tick { position: relative; background: var(--bp-1); border: 1px solid var(--line); border-radius: var(--radius); }
+  .tick::before, .tick::after {
+    content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
+    border-color: var(--safety); border-style: solid;
+  }
+  .tick::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .tick::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
 
   header.topbar {
-    background: var(--steel-dark); color: #F3F1E7; padding: 12px 18px;
+    background: var(--bp-1); color: var(--ink); padding: 14px 20px;
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border-bottom: 1px solid var(--line);
   }
-  .brand { display: flex; align-items: center; gap: 8px; }
-  .brand .mark { font-size: 20px; }
-  .brand h1 { font-size: 18px; }
-  .who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .who button { background: rgba(255,255,255,0.14); color: #fff; padding: 6px 12px; border-radius: 4px; }
+  .brand { display: flex; align-items: center; gap: 9px; }
+  .brand .mark {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .brand h1 { font-size: 19px; }
+  .brand h1 .now { color: var(--safety); }
+  .who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-soft); }
+  .who button { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); padding: 6px 12px; border-radius: var(--radius); }
+  .who button:hover { color: var(--ink); border-color: var(--line-bright); }
   nav.tabs { display: flex; gap: 4px; }
-  nav.tabs button { padding: 7px 12px; border-radius: var(--radius); font-size: 13.5px; color: #DCD9C9; background: none; }
-  nav.tabs button.active { background: rgba(255,255,255,0.14); color: #fff; }
+  nav.tabs button { padding: 8px 14px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; color: var(--ink-soft); background: none; }
+  nav.tabs button.active { background: var(--bp-2); color: var(--ink); }
+  nav.tabs button:hover:not(.active) { color: var(--ink); }
 
-  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 22px 18px 60px; }
+  #appScreen { opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; }
+  #appScreen.enter { opacity: 1; transform: translateY(0); }
   section.panel { display: none; }
   section.panel.active { display: block; }
 
   /* ---- auth ---- */
-  .auth-wrap { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; }
-  .auth-wrap h2 { margin-bottom: 4px; }
-  .auth-wrap p { color: var(--ink-soft); font-size: 13.5px; margin-top: 0; }
-  .auth-wrap .row { margin: 12px 0; }
-  .auth-wrap label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 4px; }
-  .auth-switch { text-align: center; margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
-  .auth-switch a { color: var(--steel); cursor: pointer; text-decoration: underline; }
-  .error-box { background: var(--rust-tint); color: var(--rust); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; margin-top: 10px; }
+  .auth-wrap { max-width: 380px; margin: 70px auto; padding: 28px; }
+  .auth-wrap h2 { margin-bottom: 4px; font-size: 22px; }
+  .auth-wrap p { color: var(--ink-soft); font-size: 13.5px; margin-top: 2px; }
+  .auth-wrap .row { margin: 14px 0; }
+  .auth-wrap label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 5px; }
+  .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--ink-soft); }
+  .auth-switch a { color: var(--line-bright); cursor: pointer; text-decoration: underline; }
+  .error-box { background: var(--rust-tint); color: #FFB7A0; border-radius: var(--radius); padding: 9px 11px; font-size: 13px; margin-top: 12px; border: 1px solid rgba(226,87,43,0.4); }
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 14px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; }
-  .btn-primary { background: var(--steel); color: #fff; }
-  .btn-primary:hover { background: var(--steel-dark); }
-  .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--ink); }
-  .btn-safety { background: var(--safety); color: #241900; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600; transition: transform .1s ease; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--bp-2); color: var(--ink); border: 1px solid var(--line-bright); }
+  .btn-primary:hover { background: #2B5F8F; }
+  .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); }
+  .btn-outline:hover { color: var(--ink); border-color: var(--line-bright); }
+  .btn-safety { background: var(--safety); color: var(--safety-ink); }
+  .btn-safety:hover { background: #FFBD5C; }
   .btn-block { width: 100%; }
-  .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 26px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
-  .stat .num { font-size: 22px; } .stat .label { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+  .stat { padding: 14px 16px; }
+  .stat .num { font-size: 26px; display: block; }
+  .stat .label { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
 
-  .section-head { display: flex; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
-  .section-head p { margin: 2px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+  .section-head { display: flex; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .section-head h2 { font-size: 21px; }
+  .section-head p { margin: 3px 0 0; color: var(--ink-soft); font-size: 13.5px; }
 
-  .filters { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .filters { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
-  .wcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .wcard { padding: 15px; display: flex; flex-direction: column; gap: 9px; }
   .wcard-top { display: flex; gap: 10px; align-items: center; }
-  .avatar { width: 42px; height: 42px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0;
+  }
   .wcard-name { font-size: 15px; font-weight: 600; }
   .wcard-skill { font-size: 12.5px; color: var(--ink-soft); }
-  .badge-verified { font-size: 10.5px; color: var(--steel); border: 1px solid var(--steel); border-radius: 3px; padding: 1px 5px; display: inline-block; margin-top: 2px; }
+  .badge-verified { font-size: 10px; font-weight: 600; color: var(--bp-0); background: var(--ok); border-radius: 2px; padding: 2px 6px; display: inline-block; margin-left: 6px; vertical-align: 1px; }
   .rating { font-size: 13px; color: var(--safety); }
   .rating span.count { color: var(--ink-soft); margin-left: 3px; }
   .tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .tag { font-size: 11.5px; padding: 2px 7px; border-radius: 3px; background: var(--steel-tint); color: var(--steel-dark); border: 1px solid var(--line); }
-  .wcard-meta { font-size: 12.5px; color: var(--ink-soft); display: flex; justify-content: space-between; }
-  .wcard-price { font-size: 16px; font-weight: 600; }
-  .wcard-price small { font-size: 11.5px; font-weight: 400; color: var(--ink-soft); }
-  .empty { text-align: center; padding: 40px 20px; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: var(--radius); }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 2px; background: var(--bp-2); color: var(--ink-soft); }
+  .wcard-meta { font-size: 12.5px; color: var(--ink-soft); display: flex; justify-content: space-between; align-items: center; }
+  .wcard-price { font-size: 17px; color: var(--safety); }
+  .wcard-price small { font-size: 11px; font-weight: 400; color: var(--ink-soft); font-family: 'Work Sans', sans-serif; }
+  .empty { text-align: center; padding: 44px 20px; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: var(--radius); }
 
-  .bcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
-  .bcard-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .bcard { padding: 18px; margin-bottom: 14px; }
+  .bcard-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 11px; }
   .bcard-who { display: flex; gap: 10px; align-items: center; }
   .bcard-price { text-align: right; }
-  .bcard-price .num { font-size: 17px; }
-  .status-pill { font-size: 11.5px; padding: 3px 9px; border-radius: 3px; display: inline-block; font-weight: 500; }
-  .stepper { display: flex; gap: 4px; margin: 12px 0; flex-wrap: wrap; }
-  .step { flex: 1; min-width: 70px; text-align: center; font-size: 10.5px; color: var(--ink-soft); padding-top: 8px; border-top: 3px solid var(--line); }
-  .step.done { border-top-color: var(--steel); color: var(--steel-dark); font-weight: 500; }
-  .step.now { border-top-color: var(--safety); color: var(--ink); font-weight: 600; }
-  .log { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
-  .log div { padding: 2px 0; } .log strong { color: var(--ink); font-weight: 500; }
-  .bcard-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .pay-note { font-size: 12px; color: var(--rust); margin-top: 8px; }
+  .bcard-price .num { font-size: 18px; color: var(--safety); }
+  .status-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 2px; display: inline-block; }
+  .stepper { display: flex; gap: 3px; margin: 14px 0; flex-wrap: wrap; }
+  .step { flex: 1; min-width: 68px; text-align: center; font-size: 10px; color: var(--ink-soft); padding-top: 8px; border-top: 3px solid var(--line); }
+  .step.done { border-top-color: var(--ok); color: var(--ink); font-weight: 500; }
+  .step.now { border-top-color: var(--safety); color: var(--ink); font-weight: 700; }
+  .log { background: var(--bp-0); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .log div { padding: 2px 0; } .log strong { color: var(--ink); font-weight: 600; }
+  .bcard-actions { display: flex; gap: 8px; margin-top: 13px; flex-wrap: wrap; }
+  .pay-note { font-size: 12px; color: #FFB7A0; margin-top: 8px; }
 
-  .overlay { position: fixed; inset: 0; background: rgba(15,17,12,0.55); display: none; align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; z-index: 50; }
+  .overlay { position: fixed; inset: 0; background: rgba(6,15,25,0.72); display: none; align-items: flex-start; justify-content: center; padding: 26px 14px; overflow-y: auto; z-index: 50; }
   .overlay.open { display: flex; }
-  .modal { background: var(--card); border-radius: 10px; max-width: 480px; width: 100%; padding: 22px; border: 1px solid var(--line); }
+  .modal { background: var(--bp-1); border: 1px solid var(--line); border-radius: 6px; max-width: 480px; width: 100%; padding: 24px; position: relative; }
   .modal-close { float: right; font-size: 20px; line-height: 1; color: var(--ink-soft); background: none; }
-  .modal .row { margin: 14px 0; }
+  .modal .row { margin: 15px 0; }
   .modal label { font-size: 12.5px; color: var(--ink-soft); display: block; margin-bottom: 5px; }
-  .modal .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 14px; }
-  .modal .total .num { font-size: 22px; }
+  .modal .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 13px; border-top: 1px solid var(--line); margin-top: 15px; }
+  .modal .total .num { font-size: 23px; color: var(--safety); }
   .field-2 { display: flex; gap: 10px; } .field-2 > div { flex: 1; }
-  .paying { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
-  .spinner { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--steel); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .paying { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-soft); }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--safety); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  footer.note { margin-top: 30px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 12.5px; color: var(--ink-soft); }
+  /* the one deliberate "moment" — a stamp confirming payment */
+  .stamp-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 10px; }
+  .stamp {
+    border: 4px solid var(--ok); color: var(--ok); font-family: 'Archivo', sans-serif; font-weight: 900;
+    font-size: 20px; letter-spacing: 0.03em; padding: 10px 22px; border-radius: 6px;
+    transform: scale(2.2) rotate(-8deg); opacity: 0;
+    animation: stampIn .45s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  @keyframes stampIn { to { transform: scale(1) rotate(-8deg); opacity: 1; } }
+  .stamp-sub { color: var(--ink-soft); font-size: 13px; margin-top: 14px; }
 
-  .chat-toggle { font-size: 12.5px; color: var(--steel); text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; }
-  .chat-box { display: none; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  footer.note { margin-top: 34px; padding: 15px 17px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 12.5px; color: var(--ink-soft); }
+
+  .chat-toggle { font-size: 12.5px; color: var(--line-bright); text-decoration: underline; cursor: pointer; margin-top: 9px; display: inline-block; }
+  .chat-box { display: none; margin-top: 11px; border-top: 1px solid var(--line); padding-top: 11px; }
   .chat-box.open { display: block; }
   .chat-log { max-height: 160px; overflow-y: auto; font-size: 13px; margin-bottom: 8px; }
   .chat-msg { padding: 5px 0; }
-  .chat-msg .who { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .chat-msg .who { font-size: 11px; color: var(--ink-soft); font-weight: 700; }
   .chat-send { display: flex; gap: 6px; }
   .chat-send input { flex: 1; }
 
@@ -138,14 +186,17 @@
 <body>
 
 <!-- ============ AUTH SCREEN ============ -->
-<div id="authScreen" class="auth-wrap" style="display:none;">
-  <h2 id="authTitle">Login karein</h2>
-  <p id="authSub">Apna account se hire karna shuru karein</p>
+<div id="authScreen" class="auth-wrap tick" style="display:none;">
+  <div style="display:flex;justify-content:center;margin-bottom:18px;">
+    <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="10" fill="#101B33"/><rect x="9" y="12" width="7" height="24" rx="1.5" fill="#EAF2F7"/><rect x="9" y="21" width="21" height="7" rx="1.5" fill="#EAF2F7"/><path d="M26 20 L33.5 8 L41 20 L37 20 L37 36 L30 36 L30 20 Z" fill="#F5A623"/></svg>
+  </div>
+  <h2 id="authTitle" style="text-align:center;">Login karein</h2>
+  <p style="text-align:center;">Apna account se hire karna shuru karein</p>
 
   <div id="loginForm">
     <div class="row"><label>Phone number</label><input type="tel" id="loginPhone" placeholder="9876543210"></div>
     <div class="row"><label>Password</label><input type="password" id="loginPassword"></div>
-    <button class="btn btn-primary btn-block" id="loginBtn">Login</button>
+    <button class="btn btn-safety btn-block" id="loginBtn">Login</button>
     <div class="auth-switch">Naya account? <a id="showRegister">Register karein</a></div>
   </div>
 
@@ -153,7 +204,7 @@
     <div class="row"><label>Naam</label><input type="text" id="regName"></div>
     <div class="row"><label>Phone number</label><input type="tel" id="regPhone" placeholder="9876543210"></div>
     <div class="row"><label>Password</label><input type="password" id="regPassword"></div>
-    <button class="btn btn-primary btn-block" id="registerBtn">Account banayein</button>
+    <button class="btn btn-safety btn-block" id="registerBtn">Account banayein</button>
     <div class="auth-switch">Pehle se account hai? <a id="showLogin">Login karein</a></div>
   </div>
 
@@ -163,7 +214,10 @@
 <!-- ============ MAIN APP ============ -->
 <div id="appScreen" style="display:none;">
   <header class="topbar">
-    <div class="brand"><span class="mark">👷</span><h1>Kaamgar</h1></div>
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 48 48" width="30" height="30" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="10" fill="#101B33"/><rect x="9" y="12" width="7" height="24" rx="1.5" fill="#EAF2F7"/><rect x="9" y="21" width="21" height="7" rx="1.5" fill="#EAF2F7"/><path d="M26 20 L33.5 8 L41 20 L37 20 L37 36 L30 36 L30 20 Z" fill="#F5A623"/></svg></span>
+      <h1>Hire<span class="now">Now</span></h1>
+    </div>
     <nav class="tabs">
       <button class="active" data-tab="hire">Workers hire karein</button>
       <button data-tab="bookings">Meri bookings</button>
@@ -199,12 +253,12 @@
     <footer class="note">
       Payment Razorpay se real integrate hai — agar server pe test keys set nahi hain to "Pay" karne pe
       config error dikhega, ye normal hai jab tak aap <code>.env</code> mein apni Razorpay test keys nahi daalte
-      (README dekhein). Location abhi manually update hoti hai — asli GPS ke liye worker-side app agla step hai.
+      (README dekhein). Worker apna GPS check-in khud <code>/worker</code> se karta hai.
     </footer>
   </main>
 </div>
 
-<div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
+<div class="overlay" id="overlay"><div class="modal tick" id="modalBody"></div></div>
 
 <script>
 (function () {
@@ -226,8 +280,21 @@
     return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
   }
   function initials(name) { return name.split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase(); }
-  var COLORS = ["#33565F", "#A24B2C", "#6B6350", "#3E6B4A", "#7A4E9B", "#B0872F"];
+  var COLORS = ["#2B5F8F", "#C77F1E", "#4A7A95", "#3E8F63", "#8B5FA8", "#B0872F"];
   function colorFor(id) { return COLORS[id % COLORS.length]; }
+
+  // one-time count-up for the stat numbers — the single orchestrated animation for this view
+  function countUp(el, target, isMoney) {
+    var start = 0, duration = 600, startTime = null;
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var p = Math.min((ts - startTime) / duration, 1);
+      var val = Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3)));
+      el.textContent = isMoney ? fmtMoney(val) : val;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
 
   // ---------------- auth screen wiring ----------------
   var authScreen = document.getElementById("authScreen");
@@ -283,6 +350,7 @@
     api("/api/auth/logout", { method: "POST" }).then(function () {
       state.hirer = null;
       appScreen.style.display = "none";
+      appScreen.classList.remove("enter");
       authScreen.style.display = "block";
     });
   });
@@ -291,6 +359,7 @@
     state.hirer = hirer;
     authScreen.style.display = "none";
     appScreen.style.display = "block";
+    requestAnimationFrame(function () { appScreen.classList.add("enter"); });
     document.getElementById("whoName").textContent = hirer.name;
     loadWorkers();
     loadBookings();
@@ -341,10 +410,9 @@
       var skillsDetail = (w.skills_detail || "").split(",").slice(0, 3);
       var tags = skillsDetail.map(function (t) { return '<span class="tag">' + t.trim() + '</span>'; }).join("");
       return (
-        '<div class="wcard">' +
+        '<div class="wcard tick">' +
           '<div class="wcard-top"><div class="avatar" style="background:' + colorFor(w.id) + '">' + initials(w.name) + '</div>' +
-          '<div><div class="wcard-name">' + w.name + '</div><div class="wcard-skill">' + w.skill +
-          (w.verification_status === "verified" ? '<span class="badge-verified">ID verified</span>' : '') + '</div></div></div>' +
+          '<div><div class="wcard-name">' + w.name + (w.verification_status === "verified" ? '<span class="badge-verified">ID verified</span>' : '') + '</div><div class="wcard-skill">' + w.skill + '</div></div></div>' +
           '<div class="rating">' + stars + ' <span class="count">' + w.rating + ' · ' + w.jobs_completed + ' kaam</span></div>' +
           '<div class="tags">' + tags + '</div>' +
           '<div class="wcard-meta"><span>' + w.city + '</span><span>' + w.experience_years + ' saal anubhav</span></div>' +
@@ -366,12 +434,18 @@
     var active = state.bookings.filter(function (b) { return b.status !== "completed"; }).length;
     var spent = state.bookings.reduce(function (s, b) { return s + (b.payment_status === "paid" ? b.total_amount : 0); }, 0);
     var completed = state.bookings.filter(function (b) { return b.status === "completed"; }).length;
-    document.getElementById("statsRow").innerHTML = [
-      ["Available kaamgar", state.workers.length],
-      ["Active bookings", active],
-      ["Kaam poore hue", completed],
-      ["Total paid", fmtMoney(spent)]
-    ].map(function (s) { return '<div class="stat"><div class="num">' + s[1] + '</div><div class="label">' + s[0] + '</div></div>'; }).join("");
+    var defs = [
+      ["Available kaamgar", state.workers.length, false],
+      ["Active bookings", active, false],
+      ["Kaam poore hue", completed, false],
+      ["Total paid", spent, true]
+    ];
+    document.getElementById("statsRow").innerHTML = defs.map(function (s) {
+      return '<div class="stat tick"><span class="num" data-target="' + s[1] + '" data-money="' + s[2] + '">0</span><div class="label">' + s[0] + '</div></div>';
+    }).join("");
+    document.querySelectorAll("#statsRow .num").forEach(function (el) {
+      countUp(el, Number(el.dataset.target), el.dataset.money === "true");
+    });
   }
 
   // ---------------- hire + pay modal ----------------
@@ -443,7 +517,7 @@
         amount: order.amount,
         currency: order.currency,
         order_id: order.order_id,
-        name: "Kaamgar",
+        name: "HireNow",
         description: "Booking #" + bookingId,
         handler: function (response) {
           payMsg.innerHTML = '<div class="paying"><span class="spinner"></span> Payment verify ho raha hai...</div>';
@@ -456,13 +530,17 @@
             })
           }).then(function (vr) {
             if (!vr.ok) { payMsg.innerHTML = '<div class="pay-note">Verify fail: ' + vr.data.error + '</div>'; return; }
-            closeModal();
-            loadBookings();
-            document.querySelector('nav.tabs button[data-tab="bookings"]').click();
+            // the one deliberate animated moment: a stamp confirming the booking, then close
+            modalBody.innerHTML = '<div class="stamp-wrap"><div class="stamp">CONFIRM HO GAYI</div><div class="stamp-sub">Booking #' + bookingId + ' — payment safal</div></div>';
+            setTimeout(function () {
+              closeModal();
+              loadBookings();
+              document.querySelector('nav.tabs button[data-tab="bookings"]').click();
+            }, 1100);
           });
         },
         modal: { ondismiss: function () { payMsg.innerHTML = '<div class="pay-note">Checkout band kar diya.</div>'; } },
-        theme: { color: "#33565F" }
+        theme: { color: "#F2A93B" }
       };
       var rzp = new Razorpay(options);
       rzp.on("payment.failed", function (resp) { payMsg.innerHTML = '<div class="pay-note">Payment fail: ' + resp.error.description + '</div>'; });
@@ -498,11 +576,11 @@
       var needsPay = b.payment_status !== "paid";
       var nextLabel = idx < STATUS_FLOW.length - 1 ? STATUS_LABELS[STATUS_FLOW[idx + 1]] : null;
       return (
-        '<div class="bcard">' +
+        '<div class="bcard tick">' +
           '<div class="bcard-head"><div class="bcard-who"><div class="avatar" style="background:' + colorFor(b.worker_id) + '">' + initials(b.worker_name) + '</div>' +
           '<div><div class="wcard-name">' + b.worker_name + '</div><div class="wcard-skill">' + b.worker_skill + ' · ' + b.worker_city + '</div></div></div>' +
           '<div class="bcard-price"><div class="num">' + fmtMoney(b.total_amount) + '</div><div class="wcard-skill">' + fmtDate(b.start_date) + ' · ' + b.days + ' din</div></div></div>' +
-          '<span class="status-pill" style="background:var(--steel-tint);color:var(--steel-dark)">' + STATUS_LABELS[b.status] + (needsPay ? " · Payment pending" : " · Paid") + '</span>' +
+          '<span class="status-pill" style="background:var(--bp-2);color:var(--ink)">' + STATUS_LABELS[b.status] + (needsPay ? " · Payment pending" : " · Paid") + '</span>' +
           '<div class="stepper">' + steps + '</div>' +
           '<div class="bcard-actions">' +
           (needsPay ? '<button class="btn btn-safety" data-pay="' + b.id + '">Ab pay karein</button>' :
@@ -550,7 +628,7 @@
   function loadMessages(bookingId) {
     api("/api/bookings/" + bookingId + "/messages").then(function (res) {
       var log = document.getElementById("chatlog-" + bookingId);
-      if (!res.ok) { log.innerHTML = '<div style="color:var(--rust);">Messages load nahi hue</div>'; return; }
+      if (!res.ok) { log.innerHTML = '<div style="color:#FFB7A0;">Messages load nahi hue</div>'; return; }
       if (!res.data.length) { log.innerHTML = '<div style="color:var(--ink-soft);">Koi message nahi hai abhi.</div>'; return; }
       log.innerHTML = res.data.map(function (m) {
         return '<div class="chat-msg"><div class="who">' + (m.sender_role === "hirer" ? "Aap" : "Worker") + '</div>' + m.body + '</div>';
