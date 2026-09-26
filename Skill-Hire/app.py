@@ -1,5 +1,5 @@
 """
-Kaamgar backend API — Flask + SQLite.
+HireNow backend API — Flask + SQLite.
 
 Run:
     pip install -r requirements.txt
@@ -399,9 +399,9 @@ def verify_payment():
     conn.close()
 
     if worker and worker["phone"]:
-        notify(worker["phone"], f"Kaamgar: {hirer['name']} ne aapko {booking['start_date']} ke liye hire kiya hai. Booking #{booking['id']}.")
+        notify(worker["phone"], f"HireNow: {hirer['name']} ne aapko {booking['start_date']} ke liye hire kiya hai. Booking #{booking['id']}.")
     if hirer and hirer["phone"]:
-        notify(hirer["phone"], f"Kaamgar: Aapka payment safal raha, booking #{booking['id']} confirm ho gayi.")
+        notify(hirer["phone"], f"HireNow: Aapka payment safal raha, booking #{booking['id']} confirm ho gayi.")
 
     return jsonify({"status": "confirmed", "payment_status": "paid"})
 
@@ -446,7 +446,7 @@ def razorpay_webhook():
             worker = conn.execute("SELECT phone FROM workers WHERE id = ?", (booking["worker_id"],)).fetchone()
             conn.commit()
             if worker and worker["phone"]:
-                notify(worker["phone"], f"Kaamgar: Booking #{booking['id']} confirm ho gayi (payment webhook se verify hui).")
+                notify(worker["phone"], f"HireNow: Booking #{booking['id']} confirm ho gayi (payment webhook se verify hui).")
         conn.close()
 
     return jsonify({"ok": True})
@@ -592,7 +592,7 @@ def worker_check_in(booking_id):
     conn.close()
 
     if hirer and hirer["phone"]:
-        notify(hirer["phone"], f"Kaamgar: Booking #{booking_id} status — {note_map.get(nxt, nxt)}")
+        notify(hirer["phone"], f"HireNow: Booking #{booking_id} status — {note_map.get(nxt, nxt)}")
 
     return jsonify({"status": nxt, "latitude": lat, "longitude": lng})
 
@@ -659,7 +659,7 @@ def send_message(booking_id):
     conn.close()
 
     if other and other["phone"]:
-        notify(other["phone"], f"Kaamgar: Naya message booking #{booking_id} par — \"{body[:60]}\"")
+        notify(other["phone"], f"HireNow: Naya message booking #{booking_id} par — \"{body[:60]}\"")
 
     return jsonify({"id": msg_id, "booking_id": booking_id, "sender_role": role, "sender_id": sender_id, "body": body}), 201
 
@@ -744,7 +744,7 @@ def admin_verify_worker(worker_id):
     conn.close()
 
     if worker["phone"]:
-        msg = "Kaamgar: Aapka ID verify ho gaya hai! ✅" if approve else "Kaamgar: Aapka ID verify nahi ho paya, dobara upload karein."
+        msg = "HireNow: Aapka ID verify ho gaya hai! ✅" if approve else "HireNow: Aapka ID verify nahi ho paya, dobara upload karein."
         notify(worker["phone"], msg)
 
     return jsonify({"verification_status": new_status})
@@ -767,18 +767,37 @@ CHECKOUT_HTML = """
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Kaamgar — Pay for booking {{ booking_id }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HireNow — Pay for booking {{ booking_id }}</title>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 60px auto; padding: 0 16px; }
-    button { padding: 12px 20px; font-size: 15px; cursor: pointer; }
-    #status { margin-top: 16px; font-size: 14px; color: #555; white-space: pre-wrap; }
+    :root {
+      --bp-0: #0F2A44; --bp-1: #17395C; --line: #3E6E95; --line-bright: #8FCBEF;
+      --ink: #EAF2F7; --ink-soft: #93B4CC; --safety: #F2A93B; --safety-ink: #241A05;
+      --rust: #E2572B; --ok: #58B37C;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Work Sans', system-ui, sans-serif; max-width: 420px; margin: 70px auto; padding: 0 16px;
+      background: var(--bp-0); color: var(--ink);
+    }
+    h2 { font-family: 'Archivo', sans-serif; font-weight: 800; }
+    .card { background: var(--bp-1); border: 1px solid var(--line); border-radius: 6px; padding: 22px; }
+    button { padding: 12px 20px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; border-radius: 3px;
+      background: var(--safety); color: var(--safety-ink); width: 100%; }
+    button:hover { background: #FFBD5C; }
+    #status { margin-top: 16px; font-size: 14px; color: var(--ink-soft); white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h2>Booking #{{ booking_id }}</h2>
-  <button id="payBtn">Pay with Razorpay</button>
-  <div id="status"></div>
+  <div class="card">
+    <h2>Booking #{{ booking_id }}</h2>
+    <p style="color:var(--ink-soft);font-size:13.5px;">Razorpay ke through payment complete karein</p>
+    <button id="payBtn">Pay with Razorpay</button>
+    <div id="status"></div>
+  </div>
 
   <script>
     const bookingId = {{ booking_id }};
@@ -798,7 +817,7 @@ CHECKOUT_HTML = """
         amount: order.amount,
         currency: order.currency,
         order_id: order.order_id,
-        name: "Kaamgar",
+        name: "HireNow",
         description: "Booking #" + bookingId,
         handler: async function (response) {
           statusEl.textContent = "Verifying payment...";
@@ -819,7 +838,7 @@ CHECKOUT_HTML = """
         modal: {
           ondismiss: function () { statusEl.textContent = "Checkout closed."; }
         },
-        theme: { color: "#33565F" }
+        theme: { color: "#F2A93B" }
       };
 
       const rzp = new Razorpay(options);
